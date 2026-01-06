@@ -1,5 +1,71 @@
-# AI-Advanced-chatbot
-This project is an AI-powered chatbot . It allows users to ask questions and receive highly accurate, context-aware responses based on custom documents and data.
+# AI Advanced Chatbot 🤖
+
+This project is a web-based AI chatbot built using **HTML, CSS, JavaScript, and Node.js (Express)**.  
+The chatbot allows users to interact with an AI assistant using **text input**, and it is designed to be extended for **image + text (multimodal) interaction** using the Gemini API.
+
+---
+
+## 🚀 Features
+
+- 💬 Text-based AI chat interface
+- 🎨 Clean and responsive UI
+- 🧠 Backend proxy server to securely handle API requests
+- 🔐 API key protected using `.env` file
+- 🖼️ Image upload support (UI ready for multimodal extension)
+- 📜 Scrollable chat history
+
+---
+
+## 🛠️ Tech Stack
+
+### Frontend
+- HTML
+- CSS
+- JavaScript 
+
+### Backend
+- Node.js
+- Express.js
+- Axios
+- Dotenv
+
+---
+
+## 📂 Project Structure
+
+│── server.js # Express backend server
+│── index.html # Chatbot UI
+│── style.css # Styling
+│── script.js # Frontend logic
+│── package.json # Project metadata & dependencies
+│── package-lock.json # Dependency lock file
+│── .env # Environment variables (API key)
+
+---
+
+## ⚙️ Installation & Setup
+
+### 1️⃣ Clone the Repository
+```bash
+git clone <your-repository-url>
+cd AI-Advanced-chatbot
+'''
+###2️⃣ Install Dependencies
+'''bash 
+   npm install
+'''
+###3️⃣ Create .env File
+Create a .env file in the project root and add:
+GEMINI_API_KEY=your_api_key_here
+
+4️⃣ Run the Server
+'''bash
+  node server.js
+'''
+
+Server will start at:
+http://localhost:3000
+
 
 # Gemini API Setup Instructions
 
