@@ -38,7 +38,7 @@ app.post("/api/chat", async (req, res) => {
     }
 
     const completion = await client.chat.completions.create({
-      model: "meta-llama/llama-3.1-8b-instruct:free",
+      
       messages: messages,
     });
 
