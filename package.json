@@ -2,11 +2,11 @@
   "name": "ai-advanced-chatbot",
   "version": "1.0.0",
   "description": "This project is an AI-powered chatbot . It allows users to ask questions and receive highly accurate, context-aware responses based on custom documents and data.",
-  "main": "script.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
-  },
+  "main": "server.js",
+"scripts": {
+  "start": "node server.js"
+}
+  ,
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Ananya0424/AI-Advanced-chatbot.git"
