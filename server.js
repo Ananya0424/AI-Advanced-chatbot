@@ -1,6 +1,6 @@
 const express = require("express");
 const dotenv = require("dotenv");
-const Groq = require("groq-sdk");
+const OpenAI = require("openai");
 
 dotenv.config();
 
@@ -10,7 +10,10 @@ const PORT = 3000;
 app.use(express.json({ limit: "10mb" }));
 app.use(express.static(__dirname));
 
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+const client = new OpenAI({
+  baseURL: "https://openrouter.ai/api/v1",
+  apiKey: process.env.OPENROUTER_API_KEY,
+});
 
 app.post("/api/chat", async (req, res) => {
   try {
@@ -31,25 +34,19 @@ app.post("/api/chat", async (req, res) => {
         ]
       });
     } else {
-      messages.push({
-        role: "user",
-        content: message
-      });
+      messages.push({ role: "user", content: message });
     }
 
-    const model = image ? "meta-llama/llama-4-scout-17b-16e-instruct" : "llama-3.3-70b-versatile";
-
-    const completion = await groq.chat.completions.create({
-      model: model,
+    const completion = await client.chat.completions.create({
+      model: "meta-llama/llama-3.1-8b-instruct:free",
       messages: messages,
-      max_tokens: 1024,
     });
 
     const reply = completion.choices[0]?.message?.content || "No response.";
     res.json({ response: reply });
 
   } catch (err) {
-    console.error("Groq Error:", err.message || err);
+    console.error("Error:", err.message || err);
     res.status(500).json({ error: "AI API failed: " + (err.message || "Unknown error") });
   }
 });

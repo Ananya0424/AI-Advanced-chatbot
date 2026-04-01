@@ -3,10 +3,9 @@
   "version": "1.0.0",
   "description": "This project is an AI-powered chatbot . It allows users to ask questions and receive highly accurate, context-aware responses based on custom documents and data.",
   "main": "server.js",
-"scripts": {
-  "start": "node server.js"
-}
-  ,
+  "scripts": {
+    "start": "node server.js"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Ananya0424/AI-Advanced-chatbot.git"
@@ -24,6 +23,7 @@
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "groq-sdk": "^1.1.2",
-    "node-fetch": "^3.3.2"
+    "node-fetch": "^3.3.2",
+    "openai": "^6.33.0"
   }
 }
