@@ -1,84 +1,154 @@
-let prompt = document.querySelector("#prompt")
-let chatContainer = document.querySelector(".chat-container")
-let submitBtn = document.querySelector("#submit")
-let imageBtn = document.querySelector("#image")
-let imageInput = document.querySelector("#image input")
+const userInput = document.getElementById("userInput");
+const sendBtn = document.getElementById("sendBtn");
+const imageBtn = document.getElementById("imageBtn");
+const imageInput = document.getElementById("imageInput");
+const messagesDiv = document.getElementById("messages");
 
-let selectedImage = null
+let selectedImage = null;
+let selectedImagePreview = null;
 
-function createChat(html, cls) {
-    let div = document.createElement("div")
-    div.className = cls
-    div.innerHTML = html
-    return div
+// ── Suggestion chips ──
+function sendChip(text) {
+  userInput.value = text;
+  handleSend();
 }
 
-// IMAGE SELECT
+// ── Clear chat ──
+function clearChat() {
+  messagesDiv.innerHTML = `
+    <div class="welcome" id="welcome">
+      <img src="ai.png" alt="AI" class="welcome-img" />
+      <h2>Hello! How can I help you? 👋</h2>
+      <p>Ask me anything. I'm powered by Gemini AI.</p>
+      <div class="chips">
+        <button class="chip" onclick="sendChip('What is artificial intelligence?')">What is AI?</button>
+        <button class="chip" onclick="sendChip('Write a poem about nature')">Write a poem</button>
+        <button class="chip" onclick="sendChip('Explain machine learning simply')">Machine learning</button>
+        <button class="chip" onclick="sendChip('Give me a fun fact')">Fun fact</button>
+      </div>
+    </div>`;
+}
+
+// ── Image upload ──
+imageBtn.addEventListener("click", () => imageInput.click());
+
 imageInput.addEventListener("change", () => {
-    const file = imageInput.files[0]
-    if (!file) return
+  const file = imageInput.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    selectedImage = reader.result.split(",")[1];
+    selectedImagePreview = reader.result;
+  };
+  reader.readAsDataURL(file);
+});
 
-    const reader = new FileReader()
-    reader.onload = () => {
-        selectedImage = reader.result.split(",")[1]
+// ── Add message bubble ──
+function addMessage(type, text, imgSrc = null) {
+  // Remove welcome screen on first message
+  const welcome = document.getElementById("welcome");
+  if (welcome) welcome.remove();
 
-        chatContainer.appendChild(
-            createChat(
-                `<img src="user.png" id="userImage">
-                 <div class="user-chat-area">
-                    <img src="${reader.result}" class="chooseimg">
-                 </div>`,
-                "user-chat-box"
-            )
-        )
-    }
-    reader.readAsDataURL(file)
-})
+  const row = document.createElement("div");
+  row.className = `msg-row ${type === "user" ? "user-row" : "ai-row"}`;
 
-imageBtn.addEventListener("click", () => imageInput.click())
+  const avatar = document.createElement("img");
+  avatar.className = "msg-avatar";
+  avatar.src = type === "user" ? "user.png" : "ai.png";
+  avatar.alt = type;
 
-async function sendMessage(text) {
-    const payload = { message: text }
-    if (selectedImage) payload.image = selectedImage
+  const bubble = document.createElement("div");
+  bubble.className = "msg-bubble";
+
+  if (imgSrc) {
+    const img = document.createElement("img");
+    img.src = imgSrc;
+    img.className = "img-preview";
+    bubble.appendChild(img);
+  }
+
+  if (text) {
+    const p = document.createElement("p");
+    p.innerHTML = text.replace(/\n/g, "<br>");
+    bubble.appendChild(p);
+  }
+
+  row.appendChild(avatar);
+  row.appendChild(bubble);
+  messagesDiv.appendChild(row);
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+// ── Typing indicator ──
+function showTyping() {
+  const welcome = document.getElementById("welcome");
+  if (welcome) welcome.remove();
+
+  const row = document.createElement("div");
+  row.className = "msg-row ai-row";
+  row.id = "typingRow";
+  row.innerHTML = `
+    <img class="msg-avatar" src="ai.png" alt="ai" />
+    <div class="msg-bubble typing-dots">
+      <span></span><span></span><span></span>
+    </div>`;
+  messagesDiv.appendChild(row);
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+function hideTyping() {
+  const t = document.getElementById("typingRow");
+  if (t) t.remove();
+}
+
+// ── Send message ──
+async function handleSend() {
+  const text = userInput.value.trim();
+  if (!text && !selectedImage) return;
+
+  addMessage("user", text, selectedImagePreview);
+  userInput.value = "";
+
+  const imageToSend = selectedImage;
+  selectedImage = null;
+  selectedImagePreview = null;
+  imageInput.value = "";
+
+  sendBtn.disabled = true;
+  showTyping();
+
+  try {
+    const payload = {};
+    if (text) payload.message = text;
+    if (imageToSend) payload.image = imageToSend;
 
     const res = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-    })
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
 
-    const data = await res.json()
-    selectedImage = null
-    imageInput.value = ""
-    return data.response
+    const data = await res.json();
+    hideTyping();
+
+    const reply = data.response || data.reply;
+    if (reply) {
+      addMessage("ai", reply);
+    } else {
+      addMessage("ai", "⚠️ " + (data.error || "Something went wrong."));
+    }
+
+  } catch (err) {
+    hideTyping();
+    addMessage("ai", "⚠️ Server se connect nahi ho pa raha. Server chalu hai?");
+  }
+
+  sendBtn.disabled = false;
+  userInput.focus();
 }
 
-async function handleSend() {
-    const text = prompt.value.trim()
-    if (!text && !selectedImage) return
-
-    chatContainer.appendChild(
-        createChat(
-            `<img src="user.png" id="userImage">
-             <div class="user-chat-area">${text}</div>`,
-            "user-chat-box"
-        )
-    )
-
-    prompt.value = ""
-
-    const reply = await sendMessage(text)
-
-    chatContainer.appendChild(
-        createChat(
-            `<img src="ai.png" id="aiImage">
-             <div class="ai-chat-area">${reply}</div>`,
-            "ai-chat-box"
-        )
-    )
-}
-
-submitBtn.addEventListener("click", handleSend)
-prompt.addEventListener("keydown", e => {
-    if (e.key === "Enter") handleSend()
-})
+// ── Event listeners ──
+sendBtn.addEventListener("click", handleSend);
+userInput.addEventListener("keydown", e => {
+  if (e.key === "Enter") handleSend();
+});

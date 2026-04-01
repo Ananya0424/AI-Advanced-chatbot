@@ -1,19 +1,16 @@
 const express = require("express");
 const dotenv = require("dotenv");
-const axios = require("axios");
-const path = require("path");
+const Groq = require("groq-sdk");
 
 dotenv.config();
 
 const app = express();
 const PORT = 3000;
 
-app.use(express.json());
+app.use(express.json({ limit: "10mb" }));
 app.use(express.static(__dirname));
 
-const GEMINI_URL =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
-
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 app.post("/api/chat", async (req, res) => {
   try {
@@ -23,40 +20,37 @@ app.post("/api/chat", async (req, res) => {
       return res.status(400).json({ error: "Message or image required" });
     }
 
-    const parts = [];
-
-    if (message) {
-      parts.push({ text: message });
-    }
+    const messages = [];
 
     if (image) {
-      parts.push({
-        inline_data: {
-          mime_type: "image/jpeg",
-          data: image
-        }
+      messages.push({
+        role: "user",
+        content: [
+          { type: "text", text: message || "What is in this image?" },
+          { type: "image_url", image_url: { url: `data:image/jpeg;base64,${image}` } }
+        ]
+      });
+    } else {
+      messages.push({
+        role: "user",
+        content: message
       });
     }
 
-    const response = await axios.post(
-      `${GEMINI_URL}?key=${process.env.GEMINI_API_KEY}`,
-      {
-        contents: [{ parts }]
-      },
-      {
-        headers: { "Content-Type": "application/json" }
-      }
-    );
+    const model = image ? "meta-llama/llama-4-scout-17b-16e-instruct" : "llama-3.3-70b-versatile";
 
-    const reply =
-      response.data.candidates?.[0]?.content?.parts?.[0]?.text ||
-      "No response";
+    const completion = await groq.chat.completions.create({
+      model: model,
+      messages: messages,
+      max_tokens: 1024,
+    });
 
-    res.json({ reply });
+    const reply = completion.choices[0]?.message?.content || "No response.";
+    res.json({ response: reply });
 
   } catch (err) {
-    console.error("🔥 Gemini Error:", err.response?.data || err.message);
-    res.status(500).json({ error: "Gemini API failed" });
+    console.error("Groq Error:", err.message || err);
+    res.status(500).json({ error: "AI API failed: " + (err.message || "Unknown error") });
   }
 });
 
