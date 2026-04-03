@@ -1,6 +1,6 @@
 # 🤖 AI Advanced Chatbot
 
-A modern web-based AI chatbot built with **HTML, CSS, JavaScript, Node.js (Express)**, and powered by **Groq API (LLaMA 3.3 70B)** — supports both text and image-based conversations.
+A modern web-based AI chatbot built with **HTML, CSS, JavaScript, Node.js (Express)**, and powered by **OpenRouter API** with multiple free AI models — supports both text and image-based conversations.
 
 ---
 
@@ -8,7 +8,7 @@ A modern web-based AI chatbot built with **HTML, CSS, JavaScript, Node.js (Expre
 
 - 💬 Real-time text-based AI chat
 - 🖼️ Image upload and analysis (multimodal)
-- ⚡ Ultra-fast responses via Groq API (LLaMA 3.3 70B)
+- ⚡ Multiple AI model fallback — auto-switches if one fails (429/404/503)
 - 🎨 Clean, responsive light-theme UI
 - 🔐 Secure API key handling via `.env`
 - 💡 Suggestion chips for quick queries
@@ -23,9 +23,9 @@ A modern web-based AI chatbot built with **HTML, CSS, JavaScript, Node.js (Expre
 | Layer | Technology |
 |---|---|
 | **Frontend** | HTML, CSS, JavaScript |
-| **Backend** | Node.js, Express.js |
-| **AI Model** | LLaMA 3.3 70B (via Groq API) |
-| **Vision Model** | LLaMA 4 Scout 17B (image analysis) |
+| **Backend** | Node.js, Express.js v4 |
+| **AI Models (Text)** | LLaMA 3.3 70B, Gemma 3 27B, Qwen3 8B (via OpenRouter) |
+| **AI Models (Image)** | LLaMA 3.2 11B Vision, Gemma 3 12B (via OpenRouter) |
 | **HTTP Client** | Axios |
 | **Config** | dotenv |
 
@@ -39,8 +39,9 @@ AI-Advanced-chatbot/
 ├── index.html        # Chat UI
 ├── style.css         # Styling (light theme)
 ├── script.js         # Frontend logic
-├── server.js         # Express backend + Groq API
+├── server.js         # Express backend + OpenRouter API
 ├── package.json      # Project metadata & dependencies
+├── render.yaml       # Render deployment config
 ├── .env              # Environment variables (API key) — DO NOT COMMIT
 └── README.md
 ```
@@ -51,7 +52,7 @@ AI-Advanced-chatbot/
 
 ### Prerequisites
 - Node.js v18+
-- Groq API Key (free) → [https://console.groq.com](https://console.groq.com)
+- OpenRouter API Key (free) → [https://openrouter.ai](https://openrouter.ai)
 
 ---
 
@@ -77,7 +78,7 @@ npm install
 Create a `.env` file in the root folder:
 
 ```env
-GROQ_API_KEY=your_groq_api_key_here
+OPENROUTER_API_KEY=your_openrouter_api_key_here
 ```
 
 > **Never commit your `.env` file to GitHub!**
@@ -109,8 +110,9 @@ User sends message/image
   Express /api/chat endpoint
          │
          ▼
-  Groq API (LLaMA 3.3 70B for text)
-  Groq API (LLaMA 4 Scout for images)
+  Try Model 1 (LLaMA 3.3 70B)
+  → if 429/404/503: Try Model 2 (Gemma 3 27B)
+  → if fail again:  Try Model 3 (Qwen3 8B) ...
          │
          ▼
   Response sent back to UI
@@ -127,8 +129,10 @@ User sends message/image
    - **Build Command:** `npm install`
    - **Start Command:** `node server.js`
 5. Add Environment Variable:
-   - `GROQ_API_KEY` = your key
+   - `OPENROUTER_API_KEY` = your key
 6. Click **Deploy!**
+
+> ⚠️ On the free Render plan, the server sleeps after 15 min of inactivity. First request may take 30-50 seconds.
 
 ---
 
@@ -136,10 +140,10 @@ User sends message/image
 
 ```json
 {
-  "express": "^5.2.1",
-  "groq-sdk": "latest",
-  "dotenv": "^17.2.3",
-  "axios": "^1.13.2",
+  "express": "^4.19.2",
+  "openai": "^4.52.0",
+  "dotenv": "^16.4.5",
+  "axios": "^1.7.2",
   "cors": "^2.8.5"
 }
 ```
