@@ -1,7 +1,7 @@
 {
   "name": "ai-advanced-chatbot",
   "version": "1.0.0",
-  "description": "This project is an AI-powered chatbot . It allows users to ask questions and receive highly accurate, context-aware responses based on custom documents and data.",
+  "description": "AI-powered chatbot using OpenRouter API with text and image support.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
@@ -11,19 +11,16 @@
     "url": "git+https://github.com/Ananya0424/AI-Advanced-chatbot.git"
   },
   "keywords": [],
-  "author": "",
+  "author": "Ananya Sharma",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/Ananya0424/AI-Advanced-chatbot/issues"
+  "engines": {
+    "node": ">=18.0.0"
   },
-  "homepage": "https://github.com/Ananya0424/AI-Advanced-chatbot#readme",
   "dependencies": {
-    "axios": "^1.13.2",
+    "axios": "^1.7.2",
     "cors": "^2.8.5",
-    "dotenv": "^17.2.3",
-    "express": "^5.2.1",
-    "groq-sdk": "^1.1.2",
-    "node-fetch": "^3.3.2",
-    "openai": "^6.33.0"
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "openai": "^4.52.0"
   }
 }

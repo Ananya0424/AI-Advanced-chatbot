@@ -7,19 +7,17 @@ const messagesDiv = document.getElementById("messages");
 let selectedImage = null;
 let selectedImagePreview = null;
 
-// ── Suggestion chips ──
 function sendChip(text) {
   userInput.value = text;
   handleSend();
 }
 
-// ── Clear chat ──
 function clearChat() {
   messagesDiv.innerHTML = `
     <div class="welcome" id="welcome">
       <img src="ai.png" alt="AI" class="welcome-img" />
       <h2>Hello! How can I help you? 👋</h2>
-      <p>Ask me anything. I'm powered by Gemini AI.</p>
+      <p>Ask me anything. I'm powered by AI.</p>
       <div class="chips">
         <button class="chip" onclick="sendChip('What is artificial intelligence?')">What is AI?</button>
         <button class="chip" onclick="sendChip('Write a poem about nature')">Write a poem</button>
@@ -29,7 +27,6 @@ function clearChat() {
     </div>`;
 }
 
-// ── Image upload ──
 imageBtn.addEventListener("click", () => imageInput.click());
 
 imageInput.addEventListener("change", () => {
@@ -39,13 +36,13 @@ imageInput.addEventListener("change", () => {
   reader.onload = () => {
     selectedImage = reader.result.split(",")[1];
     selectedImagePreview = reader.result;
+    imageBtn.style.color = "#4f8ef7";
+    imageBtn.style.borderColor = "#4f8ef7";
   };
   reader.readAsDataURL(file);
 });
 
-// ── Add message bubble ──
 function addMessage(type, text, imgSrc = null) {
-  // Remove welcome screen on first message
   const welcome = document.getElementById("welcome");
   if (welcome) welcome.remove();
 
@@ -79,7 +76,6 @@ function addMessage(type, text, imgSrc = null) {
   messagesDiv.scrollTop = messagesDiv.scrollHeight;
 }
 
-// ── Typing indicator ──
 function showTyping() {
   const welcome = document.getElementById("welcome");
   if (welcome) welcome.remove();
@@ -101,7 +97,6 @@ function hideTyping() {
   if (t) t.remove();
 }
 
-// ── Send message ──
 async function handleSend() {
   const text = userInput.value.trim();
   if (!text && !selectedImage) return;
@@ -113,6 +108,8 @@ async function handleSend() {
   selectedImage = null;
   selectedImagePreview = null;
   imageInput.value = "";
+  imageBtn.style.color = "";
+  imageBtn.style.borderColor = "";
 
   sendBtn.disabled = true;
   showTyping();
@@ -125,7 +122,7 @@ async function handleSend() {
     const res = await fetch("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
     });
 
     const data = await res.json();
@@ -135,20 +132,18 @@ async function handleSend() {
     if (reply) {
       addMessage("ai", reply);
     } else {
-      addMessage("ai", "⚠️ " + (data.error || "Something went wrong."));
+      addMessage("ai", "⚠️ " + (data.error || "Something went wrong. Please try again."));
     }
-
   } catch (err) {
     hideTyping();
-    addMessage("ai", "⚠️ Server se connect nahi ho pa raha. Server chalu hai?");
+    addMessage("ai", "⚠️ Could not connect to server. Please check your connection and try again.");
   }
 
   sendBtn.disabled = false;
   userInput.focus();
 }
 
-// ── Event listeners ──
 sendBtn.addEventListener("click", handleSend);
-userInput.addEventListener("keydown", e => {
+userInput.addEventListener("keydown", (e) => {
   if (e.key === "Enter") handleSend();
 });
