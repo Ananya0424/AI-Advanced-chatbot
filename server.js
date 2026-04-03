@@ -50,13 +50,46 @@ app.post("/api/chat", async (req, res) => {
       messages.push({ role: "user", content: message });
     }
 
-    const completion = await client.chat.completions.create({
-      model: image ? "meta-llama/llama-4-scout:free" : "deepseek/deepseek-r1:free",
-      messages: messages,
-    });
+    // Fallback models — tries each one until one works
+    const textModels = [
+      "meta-llama/llama-3.3-70b-instruct:free",
+      "google/gemma-3-27b-it:free",
+      "google/gemma-3-12b-it:free",
+      "qwen/qwen3-8b:free",
+      "qwen/qwen3-4b:free",
+    ];
+    const imageModels = [
+      "meta-llama/llama-3.2-11b-vision-instruct:free",
+      "google/gemma-3-12b-it:free",
+    ];
 
-    const reply = completion.choices[0]?.message?.content || "No response received.";
-    res.json({ response: reply });
+    const models = image ? imageModels : textModels;
+    let reply = null;
+    let lastError = null;
+
+    for (const model of models) {
+      try {
+        const completion = await client.chat.completions.create({
+          model,
+          messages,
+        });
+        reply = completion.choices[0]?.message?.content || "No response received.";
+        console.log(`Success with model: ${model}`);
+        break;
+      } catch (modelErr) {
+        console.warn(`Model ${model} failed (${modelErr.status}):`, modelErr.message);
+        lastError = modelErr;
+        // Retry on rate limit (429), server error (503), or not found (404)
+        const retryStatuses = [429, 503, 404];
+        if (!retryStatuses.includes(modelErr.status)) break;
+      }
+    }
+
+    if (reply) {
+      res.json({ response: reply });
+    } else {
+      throw lastError;
+    }
 
   } catch (err) {
     console.error("Error:", err.message || err);
@@ -67,7 +100,6 @@ app.post("/api/chat", async (req, res) => {
   }
 });
 
-// Health check endpoint for Render
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
 });
