@@ -4,3 +4,4 @@ node_modules/
 # Environment file
 .env
 
+node_modules/
