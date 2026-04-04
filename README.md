@@ -2,7 +2,7 @@
 
 A modern web-based AI chatbot built with **HTML, CSS, JavaScript, Node.js (Express)**, and powered by **OpenRouter API** with multiple free AI models — supports both text and image-based conversations.
 
-🔗 **Live Demo:** [https://ai-advanced-chatbot-1.onrender.com](https://ai-advanced-chatbot-1.onrender.com)
+🔗 **Live Demo:** [https://ai-advanced-chatbot-1.onrender.com](https://ai-advanced-chatbot-1.onrender.com/)
 
 ---
 
