@@ -56,7 +56,8 @@ app.post("/api/chat", async (req, res) => {
       "google/gemma-3-27b-it:free",
       "google/gemma-3-12b-it:free",
       "qwen/qwen3-8b:free",
-      "qwen/qwen3-4b:free",
+      "deepseek/deepseek-v3:free",
+      "microsoft/phi-4-reasoning-plus:free",
     ];
     const imageModels = [
       "meta-llama/llama-3.2-11b-vision-instruct:free",
