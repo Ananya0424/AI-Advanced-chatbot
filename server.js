@@ -77,6 +77,7 @@ app.post("/api/chat", async (req, res) => {
         const completion = await client.chat.completions.create({
           model,
           messages,
+          max_tokens: 1000,
         });
         reply = completion.choices[0]?.message?.content || "No response received.";
         console.log(`✅ Success with model: ${model}`);
