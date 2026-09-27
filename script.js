@@ -12,6 +12,7 @@ const removeAttachmentBtn = document.getElementById("removeAttachmentBtn");
 const mobileToggleBtn = document.getElementById("mobileToggleBtn");
 const sidebar = document.getElementById("sidebar");
 const sidebarOverlay = document.getElementById("sidebarOverlay");
+const sessionTitle = document.getElementById("sessionTitle");
 
 let selectedImage = null;
 let selectedImagePreview = null;
@@ -112,7 +113,7 @@ function clearChat() {
   messagesDiv.innerHTML = `
     <div class="welcome" id="welcome">
       <div class="welcome-content">
-        <h2 class="welcome-title">Nexus Workspace</h2>
+        <h2 class="welcome-title">Nexus AI Workspace</h2>
         <p class="welcome-subtitle">Ask a question, write code, or attach an image for analysis.</p>
 
         <div class="suggestion-pills">
@@ -131,6 +132,35 @@ function clearChat() {
         </div>
       </div>
     </div>`;
+}
+
+// Mode Selector Handler
+function selectMenu(btn, mode) {
+  document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+
+  if (mode === 'vision') {
+    if (sessionTitle) sessionTitle.textContent = "Vision & Image Analysis";
+    imageInput.click();
+  } else if (mode === 'code') {
+    if (sessionTitle) sessionTitle.textContent = "Code Assistant";
+    userInput.value = "Write a clean function for: ";
+    userInput.focus();
+    autoResizeTextarea();
+  } else if (mode === 'summarize') {
+    if (sessionTitle) sessionTitle.textContent = "Summarization";
+    userInput.value = "Summarize the following: ";
+    userInput.focus();
+    autoResizeTextarea();
+  } else {
+    if (sessionTitle) sessionTitle.textContent = "General Session";
+    userInput.focus();
+  }
+
+  if (sidebar && sidebarOverlay) {
+    sidebar.classList.remove("show-mobile");
+    sidebarOverlay.classList.remove("show-mobile");
+  }
 }
 
 // Attach image handler
@@ -311,6 +341,14 @@ if (userInput.tagName.toLowerCase() === "textarea") {
 }
 
 sendBtn.addEventListener("click", handleSend);
+
+// Global Keyboard Shortcut: Ctrl+N / Cmd+N for New Session
+document.addEventListener("keydown", (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "n") {
+    e.preventDefault();
+    clearChat();
+  }
+});
 
 // Mobile sidebar toggle
 if (mobileToggleBtn && sidebar && sidebarOverlay) {
