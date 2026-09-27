@@ -113,21 +113,21 @@ function clearChat() {
   messagesDiv.innerHTML = `
     <div class="welcome" id="welcome">
       <div class="welcome-content">
-        <h2 class="welcome-title">Nexus AI Workspace</h2>
-        <p class="welcome-subtitle">Ask a question, write code, or attach an image for analysis.</p>
+        <h2 class="welcome-title">Hello! How can I help you today? 👋</h2>
+        <p class="welcome-subtitle">Ask me anything, upload an image, or get help with code.</p>
 
         <div class="suggestion-pills">
           <button class="chip" onclick="sendChip('What is artificial intelligence?')">
             <span>What is AI?</span>
           </button>
           <button class="chip" onclick="sendChip('Explain machine learning simply')">
-            <span>Machine Learning</span>
+            <span>Explain machine learning</span>
           </button>
-          <button class="chip" onclick="sendChip('Write a clean JavaScript async function example')">
-            <span>Async JS Example</span>
+          <button class="chip" onclick="sendChip('Write a poem about nature')">
+            <span>Write a poem</span>
           </button>
-          <button class="chip" onclick="sendChip('Give me a fun fact about software engineering')">
-            <span>Tech Trivia</span>
+          <button class="chip" onclick="sendChip('Give me a fun fact')">
+            <span>Give me a fun fact</span>
           </button>
         </div>
       </div>
@@ -140,20 +140,20 @@ function selectMenu(btn, mode) {
   if (btn) btn.classList.add('active');
 
   if (mode === 'vision') {
-    if (sessionTitle) sessionTitle.textContent = "Vision & Image Analysis";
+    if (sessionTitle) sessionTitle.textContent = "Image Analysis";
     imageInput.click();
   } else if (mode === 'code') {
-    if (sessionTitle) sessionTitle.textContent = "Code Assistant";
-    userInput.value = "Write a clean function for: ";
+    if (sessionTitle) sessionTitle.textContent = "Code Helper";
+    userInput.value = "Write a code snippet for: ";
     userInput.focus();
     autoResizeTextarea();
   } else if (mode === 'summarize') {
-    if (sessionTitle) sessionTitle.textContent = "Summarization";
+    if (sessionTitle) sessionTitle.textContent = "Summarize";
     userInput.value = "Summarize the following: ";
     userInput.focus();
     autoResizeTextarea();
   } else {
-    if (sessionTitle) sessionTitle.textContent = "General Session";
+    if (sessionTitle) sessionTitle.textContent = "AI Assistant";
     userInput.focus();
   }
 
@@ -211,7 +211,7 @@ function addMessage(type, text, imgSrc = null) {
   if (type === "user") {
     avatar.textContent = "You";
   } else {
-    avatar.textContent = "Nexus";
+    avatar.textContent = "AI";
   }
 
   const bubbleContainer = document.createElement("div");
@@ -259,7 +259,7 @@ function showTyping() {
   row.className = "msg-row ai-row";
   row.id = "typingRow";
   row.innerHTML = `
-    <div class="msg-avatar">Nexus</div>
+    <div class="msg-avatar">AI</div>
     <div class="msg-bubble-container">
       <div class="msg-bubble typing-dots">
         <span></span><span></span><span></span>
