@@ -139,18 +139,8 @@ function selectMenu(btn, mode) {
   document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
   if (btn) btn.classList.add('active');
 
-  if (mode === 'vision') {
-    if (sessionTitle) sessionTitle.textContent = "Image Analysis";
-    imageInput.click();
-  } else if (mode === 'code') {
-    if (sessionTitle) sessionTitle.textContent = "Code Helper";
-    userInput.value = "Write a code snippet for: ";
-    userInput.focus();
-    autoResizeTextarea();
-  } else {
-    if (sessionTitle) sessionTitle.textContent = "AI Assistant";
-    userInput.focus();
-  }
+  if (sessionTitle) sessionTitle.textContent = "AI Assistant";
+  userInput.focus();
 
   if (sidebar && sidebarOverlay) {
     sidebar.classList.remove("show-mobile");
