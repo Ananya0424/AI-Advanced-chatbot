@@ -4,29 +4,168 @@ const imageBtn = document.getElementById("imageBtn");
 const imageInput = document.getElementById("imageInput");
 const messagesDiv = document.getElementById("messages");
 
+// Additional UI references
+const imagePreviewContainer = document.getElementById("imagePreviewContainer");
+const attachmentThumbnail = document.getElementById("attachmentThumbnail");
+const attachmentName = document.getElementById("attachmentName");
+const removeAttachmentBtn = document.getElementById("removeAttachmentBtn");
+const mobileToggleBtn = document.getElementById("mobileToggleBtn");
+const sidebar = document.getElementById("sidebar");
+const sidebarOverlay = document.getElementById("sidebarOverlay");
+
 let selectedImage = null;
 let selectedImagePreview = null;
 
+// HTML escaping helper
+function escapeHtml(str) {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+// Markdown parser with code block formatting & copy buttons
+function parseMarkdown(text) {
+  if (!text) return "";
+  
+  const codeBlocks = [];
+  let placeholderText = text.replace(/```(\w*)\n([\s\S]*?)```/g, (match, lang, code) => {
+    const id = "code_block_" + Math.random().toString(36).substring(2, 9);
+    const cleanLang = lang.trim() || "code";
+    const escapedCode = escapeHtml(code.trim());
+    
+    codeBlocks.push({
+      id,
+      html: `<div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">${cleanLang}</span>
+          <button class="copy-btn" data-code-id="${id}" onclick="copyCode(this)">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+            <span>Copy code</span>
+          </button>
+        </div>
+        <pre><code id="${id}">${escapedCode}</code></pre>
+      </div>`
+    });
+    return `___CODE_BLOCK_${codeBlocks.length - 1}___`;
+  });
+
+  placeholderText = escapeHtml(placeholderText);
+
+  // Inline formatting
+  placeholderText = placeholderText.replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>');
+  placeholderText = placeholderText.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  placeholderText = placeholderText.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+  
+  // Headings
+  placeholderText = placeholderText.replace(/^### (.*$)/gim, '<h4 class="msg-heading">$1</h4>');
+  placeholderText = placeholderText.replace(/^## (.*$)/gim, '<h3 class="msg-heading">$1</h3>');
+  placeholderText = placeholderText.replace(/^# (.*$)/gim, '<h2 class="msg-heading">$1</h2>');
+
+  // Bullet list items
+  placeholderText = placeholderText.replace(/^\s*[-*+]\s+(.*$)/gim, '<li class="msg-list-item">$1</li>');
+
+  // Newlines to breaks
+  placeholderText = placeholderText.replace(/\n/g, "<br>");
+
+  // Restore code blocks
+  codeBlocks.forEach((block, index) => {
+    placeholderText = placeholderText.replace(`___CODE_BLOCK_${index}___`, block.html);
+  });
+
+  return placeholderText;
+}
+
+// Copy code function
+function copyCode(btn) {
+  const codeId = btn.getAttribute("data-code-id");
+  const codeEl = document.getElementById(codeId);
+  if (!codeEl) return;
+
+  const textToCopy = codeEl.innerText || codeEl.textContent;
+  navigator.clipboard.writeText(textToCopy).then(() => {
+    const span = btn.querySelector("span");
+    const originalText = span ? span.innerText : "Copy code";
+    if (span) span.innerText = "Copied!";
+    btn.classList.add("copied");
+    setTimeout(() => {
+      if (span) span.innerText = originalText;
+      btn.classList.remove("copied");
+    }, 2000);
+  }).catch(err => {
+    console.error("Failed to copy:", err);
+  });
+}
+
 function sendChip(text) {
   userInput.value = text;
+  autoResizeTextarea();
   handleSend();
 }
 
 function clearChat() {
   messagesDiv.innerHTML = `
     <div class="welcome" id="welcome">
-      <img src="ai.png" alt="AI" class="welcome-img" />
-      <h2>Hello! How can I help you? 👋</h2>
-      <p>Ask me anything. I'm powered by AI.</p>
-      <div class="chips">
-        <button class="chip" onclick="sendChip('What is artificial intelligence?')">What is AI?</button>
-        <button class="chip" onclick="sendChip('Write a poem about nature')">Write a poem</button>
-        <button class="chip" onclick="sendChip('Explain machine learning simply')">Machine learning</button>
-        <button class="chip" onclick="sendChip('Give me a fun fact')">Fun fact</button>
+      <div class="welcome-header">
+        <div class="welcome-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          </svg>
+        </div>
+        <h2>Nexus AI Assistant</h2>
+        <p>High-performance AI model environment for coding, technical queries, and image analysis.</p>
+      </div>
+
+      <div class="prompt-grid">
+        <button class="prompt-card" onclick="sendChip('What is artificial intelligence?')">
+          <div class="card-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          </div>
+          <div class="card-content">
+            <span class="card-title">Concept Overview</span>
+            <span class="card-desc">Explain Artificial Intelligence fundamentals</span>
+          </div>
+        </button>
+
+        <button class="prompt-card" onclick="sendChip('Explain machine learning simply')">
+          <div class="card-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          </div>
+          <div class="card-content">
+            <span class="card-title">Machine Learning</span>
+            <span class="card-desc">Break down ML algorithms and models</span>
+          </div>
+        </button>
+
+        <button class="prompt-card" onclick="sendChip('Write a clean JavaScript async function example')">
+          <div class="card-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          </div>
+          <div class="card-content">
+            <span class="card-title">Code Example</span>
+            <span class="card-desc">Generate production-ready JS code snippet</span>
+          </div>
+        </button>
+
+        <button class="prompt-card" onclick="sendChip('Give me a fun fact about software engineering')">
+          <div class="card-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+          </div>
+          <div class="card-content">
+            <span class="card-title">Technical Insight</span>
+            <span class="card-desc">Interesting software history & facts</span>
+          </div>
+        </button>
       </div>
     </div>`;
 }
 
+// Attach image handler
 imageBtn.addEventListener("click", () => imageInput.click());
 
 imageInput.addEventListener("change", () => {
@@ -36,12 +175,32 @@ imageInput.addEventListener("change", () => {
   reader.onload = () => {
     selectedImage = reader.result.split(",")[1];
     selectedImagePreview = reader.result;
-    imageBtn.style.color = "#4f8ef7";
-    imageBtn.style.borderColor = "#4f8ef7";
+    
+    // UI update for attachment preview
+    if (imagePreviewContainer && attachmentThumbnail) {
+      attachmentThumbnail.src = reader.result;
+      if (attachmentName) attachmentName.textContent = file.name || "Attached Image";
+      imagePreviewContainer.style.display = "flex";
+    }
+    imageBtn.classList.add("active");
   };
   reader.readAsDataURL(file);
 });
 
+// Clear attached image
+function clearSelectedImage() {
+  selectedImage = null;
+  selectedImagePreview = null;
+  imageInput.value = "";
+  if (imagePreviewContainer) imagePreviewContainer.style.display = "none";
+  imageBtn.classList.remove("active");
+}
+
+if (removeAttachmentBtn) {
+  removeAttachmentBtn.addEventListener("click", clearSelectedImage);
+}
+
+// Add message to chat log
 function addMessage(type, text, imgSrc = null) {
   const welcome = document.getElementById("welcome");
   if (welcome) welcome.remove();
@@ -49,33 +208,57 @@ function addMessage(type, text, imgSrc = null) {
   const row = document.createElement("div");
   row.className = `msg-row ${type === "user" ? "user-row" : "ai-row"}`;
 
-  const avatar = document.createElement("img");
+  const avatar = document.createElement("div");
   avatar.className = "msg-avatar";
-  avatar.src = type === "user" ? "user.png" : "ai.png";
-  avatar.alt = type;
+  if (type === "user") {
+    avatar.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+  } else {
+    avatar.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
+  }
+
+  const bubbleContainer = document.createElement("div");
+  bubbleContainer.className = "msg-bubble-container";
+
+  const authorLabel = document.createElement("span");
+  authorLabel.className = "msg-author";
+  authorLabel.textContent = type === "user" ? "You" : "Nexus Assistant";
 
   const bubble = document.createElement("div");
   bubble.className = "msg-bubble";
 
   if (imgSrc) {
+    const imgWrapper = document.createElement("div");
+    imgWrapper.className = "img-preview-wrapper";
     const img = document.createElement("img");
     img.src = imgSrc;
     img.className = "img-preview";
-    bubble.appendChild(img);
+    img.alt = "Uploaded image";
+    imgWrapper.appendChild(img);
+    bubble.appendChild(imgWrapper);
   }
 
   if (text) {
-    const p = document.createElement("p");
-    p.innerHTML = text.replace(/\n/g, "<br>");
-    bubble.appendChild(p);
+    const contentDiv = document.createElement("div");
+    contentDiv.className = "msg-text-content";
+    if (type === "user") {
+      contentDiv.innerHTML = escapeHtml(text).replace(/\n/g, "<br>");
+    } else {
+      contentDiv.innerHTML = parseMarkdown(text);
+    }
+    bubble.appendChild(contentDiv);
   }
 
+  bubbleContainer.appendChild(authorLabel);
+  bubbleContainer.appendChild(bubble);
+
   row.appendChild(avatar);
-  row.appendChild(bubble);
+  row.appendChild(bubbleContainer);
+
   messagesDiv.appendChild(row);
   messagesDiv.scrollTop = messagesDiv.scrollHeight;
 }
 
+// Typing indicator state
 function showTyping() {
   const welcome = document.getElementById("welcome");
   if (welcome) welcome.remove();
@@ -84,9 +267,14 @@ function showTyping() {
   row.className = "msg-row ai-row";
   row.id = "typingRow";
   row.innerHTML = `
-    <img class="msg-avatar" src="ai.png" alt="ai" />
-    <div class="msg-bubble typing-dots">
-      <span></span><span></span><span></span>
+    <div class="msg-avatar">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+    </div>
+    <div class="msg-bubble-container">
+      <span class="msg-author">Nexus Assistant</span>
+      <div class="msg-bubble typing-dots">
+        <span></span><span></span><span></span>
+      </div>
     </div>`;
   messagesDiv.appendChild(row);
   messagesDiv.scrollTop = messagesDiv.scrollHeight;
@@ -97,19 +285,17 @@ function hideTyping() {
   if (t) t.remove();
 }
 
+// Send message handler
 async function handleSend() {
   const text = userInput.value.trim();
   if (!text && !selectedImage) return;
 
   addMessage("user", text, selectedImagePreview);
   userInput.value = "";
+  autoResizeTextarea();
 
   const imageToSend = selectedImage;
-  selectedImage = null;
-  selectedImagePreview = null;
-  imageInput.value = "";
-  imageBtn.style.color = "";
-  imageBtn.style.borderColor = "";
+  clearSelectedImage();
 
   sendBtn.disabled = true;
   showTyping();
@@ -143,7 +329,39 @@ async function handleSend() {
   userInput.focus();
 }
 
+// Auto-resizing textarea
+function autoResizeTextarea() {
+  if (userInput.tagName.toLowerCase() === "textarea") {
+    userInput.style.height = "auto";
+    userInput.style.height = Math.min(userInput.scrollHeight, 150) + "px";
+  }
+}
+
+if (userInput.tagName.toLowerCase() === "textarea") {
+  userInput.addEventListener("input", autoResizeTextarea);
+  userInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  });
+} else {
+  userInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") handleSend();
+  });
+}
+
 sendBtn.addEventListener("click", handleSend);
-userInput.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") handleSend();
-});
+
+// Mobile sidebar toggle
+if (mobileToggleBtn && sidebar && sidebarOverlay) {
+  mobileToggleBtn.addEventListener("click", () => {
+    sidebar.classList.toggle("show-mobile");
+    sidebarOverlay.classList.toggle("show-mobile");
+  });
+  
+  sidebarOverlay.addEventListener("click", () => {
+    sidebar.classList.remove("show-mobile");
+    sidebarOverlay.classList.remove("show-mobile");
+  });
+}
