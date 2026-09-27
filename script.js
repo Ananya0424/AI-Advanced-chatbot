@@ -13,9 +13,14 @@ const mobileToggleBtn = document.getElementById("mobileToggleBtn");
 const sidebar = document.getElementById("sidebar");
 const sidebarOverlay = document.getElementById("sidebarOverlay");
 const sessionTitle = document.getElementById("sessionTitle");
+const chatHistoryList = document.getElementById("chatHistoryList");
 
 let selectedImage = null;
 let selectedImagePreview = null;
+
+// Chat History State
+let currentChatId = null;
+let currentChatMessages = [];
 
 // HTML escaping helper
 function escapeHtml(str) {
@@ -110,6 +115,10 @@ function sendChip(text) {
 }
 
 function clearChat() {
+  currentChatId = null;
+  currentChatMessages = [];
+  renderHistoryUI();
+  
   messagesDiv.innerHTML = `
     <div class="welcome" id="welcome">
       <div class="welcome-content">
@@ -132,19 +141,120 @@ function clearChat() {
         </div>
       </div>
     </div>`;
-}
-
-// Mode Selector Handler
-function selectMenu(btn, mode) {
-  document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
-  if (btn) btn.classList.add('active');
 
   if (sessionTitle) sessionTitle.textContent = "AI Assistant";
-  userInput.focus();
+}
+
+// ── LOCAL STORAGE CHAT HISTORY ──
+function getSavedHistory() {
+  try {
+    return JSON.parse(localStorage.getItem("ai_chat_history")) || [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function saveHistoryToStorage(history) {
+  try {
+    localStorage.setItem("ai_chat_history", JSON.stringify(history));
+  } catch (e) {
+    console.error("Storage error:", e);
+  }
+}
+
+function saveCurrentChatState() {
+  if (currentChatMessages.length === 0) return;
+
+  const history = getSavedHistory();
+  const firstUserMsg = currentChatMessages.find(m => m.type === "user");
+  const titleText = firstUserMsg ? (firstUserMsg.text || "Image Chat").substring(0, 24) + "..." : "Chat";
+
+  if (!currentChatId) {
+    currentChatId = Date.now();
+  }
+
+  const existingIndex = history.findIndex(item => item.id === currentChatId);
+  const chatData = {
+    id: currentChatId,
+    title: titleText,
+    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    messages: currentChatMessages
+  };
+
+  if (existingIndex >= 0) {
+    history[existingIndex] = chatData;
+  } else {
+    history.unshift(chatData);
+  }
+
+  saveHistoryToStorage(history);
+  renderHistoryUI();
+}
+
+function renderHistoryUI() {
+  if (!chatHistoryList) return;
+  const history = getSavedHistory();
+  
+  if (history.length === 0) {
+    chatHistoryList.innerHTML = `<div class="empty-history-text">No previous chats</div>`;
+    return;
+  }
+
+  chatHistoryList.innerHTML = "";
+  history.forEach(item => {
+    const historyItem = document.createElement("div");
+    historyItem.className = `history-item ${item.id === currentChatId ? 'active' : ''}`;
+    
+    historyItem.innerHTML = `
+      <div class="history-item-content" onclick="loadChatFromHistory(${item.id})">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+        <span class="history-title">${escapeHtml(item.title)}</span>
+      </div>
+      <button class="delete-history-btn" onclick="deleteHistoryItem(event, ${item.id})" title="Delete Chat">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    `;
+    
+    chatHistoryList.appendChild(historyItem);
+  });
+}
+
+function loadChatFromHistory(chatId) {
+  const history = getSavedHistory();
+  const chat = history.find(item => item.id === chatId);
+  if (!chat) return;
+
+  currentChatId = chat.id;
+  currentChatMessages = chat.messages || [];
+
+  messagesDiv.innerHTML = "";
+  currentChatMessages.forEach(msg => {
+    renderMessageDOM(msg.type, msg.text, msg.imgSrc);
+  });
+
+  renderHistoryUI();
 
   if (sidebar && sidebarOverlay) {
     sidebar.classList.remove("show-mobile");
     sidebarOverlay.classList.remove("show-mobile");
+  }
+}
+
+function deleteHistoryItem(e, chatId) {
+  e.stopPropagation();
+  let history = getSavedHistory();
+  history = history.filter(item => item.id !== chatId);
+  saveHistoryToStorage(history);
+
+  if (currentChatId === chatId) {
+    clearChat();
+  } else {
+    renderHistoryUI();
   }
 }
 
@@ -183,8 +293,8 @@ if (removeAttachmentBtn) {
   removeAttachmentBtn.addEventListener("click", clearSelectedImage);
 }
 
-// Add message to chat log
-function addMessage(type, text, imgSrc = null) {
+// Render DOM message element
+function renderMessageDOM(type, text, imgSrc = null) {
   const welcome = document.getElementById("welcome");
   if (welcome) welcome.remove();
 
@@ -233,6 +343,13 @@ function addMessage(type, text, imgSrc = null) {
 
   messagesDiv.appendChild(row);
   messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+// Add message to chat log & state
+function addMessage(type, text, imgSrc = null) {
+  currentChatMessages.push({ type, text, imgSrc });
+  renderMessageDOM(type, text, imgSrc);
+  saveCurrentChatState();
 }
 
 // Typing indicator state
@@ -347,3 +464,6 @@ if (mobileToggleBtn && sidebar && sidebarOverlay) {
     sidebarOverlay.classList.remove("show-mobile");
   });
 }
+
+// Initial history load
+renderHistoryUI();

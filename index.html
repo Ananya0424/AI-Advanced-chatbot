@@ -39,16 +39,12 @@
         </button>
       </div>
 
-      <div class="sidebar-section">
-        <span class="sidebar-section-title">Menu</span>
-        <nav class="sidebar-menu" id="sidebarMenu">
-          <button class="menu-item active" onclick="selectMenu(this, 'general')">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-            </svg>
-            <span>Chat</span>
-          </button>
-        </nav>
+      <!-- CHAT HISTORY SECTION -->
+      <div class="sidebar-section history-section">
+        <span class="sidebar-section-title">Recent Chats</span>
+        <div class="chat-history-list" id="chatHistoryList">
+          <div class="empty-history-text" id="emptyHistoryText">No previous chats</div>
+        </div>
       </div>
 
       <div class="sidebar-bottom">

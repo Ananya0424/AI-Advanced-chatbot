@@ -1,6 +1,5 @@
 /* ─────────────────────────────────────────────────────────────
-   NEXUS — PRODUCTION DEVELOPER WORKSPACE STYLES
-   Inspired by Raycast, Linear, Vercel & Cursor
+   AI CHATBOT — CLEAN STYLES & CHAT HISTORY
    ───────────────────────────────────────────────────────────── */
 
 :root {
@@ -24,16 +23,7 @@
   --text-secondary: #94a3b8;
   --text-muted: #64748b;
 
-  /* Accent Color — Refined Indigo/Slate */
   --accent: #6366f1;
-  --accent-hover: #4f46e5;
-  --accent-muted: rgba(99, 102, 241, 0.12);
-
-  /* Typography */
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-mono: 'JetBrains Mono', Consolas, Monaco, monospace;
-
-  /* Dimensions & Radius */
   --radius-sm: 6px;
   --radius-md: 8px;
   --radius-lg: 12px;
@@ -53,7 +43,7 @@ html, body {
   height: 100%;
   background-color: var(--bg-app);
   color: var(--text-primary);
-  font-family: var(--font-sans);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 13.5px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
@@ -133,22 +123,13 @@ button, input, textarea {
   color: var(--text-primary);
 }
 
-.brand-tag {
-  font-size: 0.68rem;
-  font-family: var(--font-mono);
-  color: var(--text-muted);
-  background: rgba(255, 255, 255, 0.04);
-  padding: 1px 5px;
-  border-radius: 4px;
-  border: 1px solid var(--border-subtle);
-}
-
 .new-chat-btn {
   width: 100%;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 7px 10px;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 10px;
   background-color: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
@@ -164,17 +145,14 @@ button, input, textarea {
   border-color: var(--border-focus);
 }
 
-.new-chat-btn .shortcut {
-  font-size: 0.68rem;
-  font-family: var(--font-mono);
-  color: var(--text-muted);
-}
-
+/* ── CHAT HISTORY SECTION ── */
 .sidebar-section {
   padding: 12px 14px;
   display: flex;
   flex-direction: column;
   gap: 6px;
+  flex: 1;
+  overflow: hidden;
 }
 
 .sidebar-section-title {
@@ -183,61 +161,87 @@ button, input, textarea {
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--text-muted);
-  margin-bottom: 2px;
+  margin-bottom: 4px;
 }
 
-.sidebar-menu {
+.chat-history-list {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  overflow-y: auto;
+  flex: 1;
 }
 
-.menu-item {
+.chat-history-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.chat-history-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.history-item {
   display: flex;
   align-items: center;
-  gap: 9px;
+  justify-content: space-between;
   padding: 7px 9px;
-  background: transparent;
-  border: none;
   border-radius: var(--radius-sm);
   color: var(--text-secondary);
   font-size: 0.82rem;
   cursor: pointer;
   transition: all var(--transition-fast);
-  text-align: left;
-  width: 100%;
 }
 
-.menu-item:hover {
-  background-color: rgba(255, 255, 255, 0.04);
+.history-item:hover {
+  background-color: rgba(255, 255, 255, 0.05);
   color: var(--text-primary);
 }
 
-.menu-item.active {
-  background-color: rgba(255, 255, 255, 0.07);
+.history-item.active {
+  background-color: rgba(255, 255, 255, 0.08);
   color: var(--text-primary);
   font-weight: 500;
 }
 
-.model-badge {
+.history-item-content {
   display: flex;
   align-items: center;
-  gap: 7px;
-  padding: 6px 9px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
-  font-size: 0.76rem;
-  font-family: var(--font-mono);
-  color: var(--text-secondary);
+  gap: 8px;
+  flex: 1;
+  overflow: hidden;
 }
 
-.model-dot {
-  width: 6px;
-  height: 6px;
-  background: var(--accent);
-  border-radius: 50%;
-  flex-shrink: 0;
+.history-title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.delete-history-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  opacity: 0;
+  transition: opacity var(--transition-fast), color var(--transition-fast);
+}
+
+.history-item:hover .delete-history-btn {
+  opacity: 1;
+}
+
+.delete-history-btn:hover {
+  color: #ef4444;
+}
+
+.empty-history-text {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-style: italic;
+  padding: 8px 4px;
 }
 
 .sidebar-bottom {
@@ -393,7 +397,7 @@ button, input, textarea {
   border-radius: 4px;
 }
 
-/* ── WELCOME EMPTY STATE (MINIMALIST COMMAND PALETTE STYLE) ── */
+/* ── WELCOME EMPTY STATE ── */
 .welcome {
   max-width: 640px;
   margin: auto;
@@ -460,7 +464,7 @@ button, input, textarea {
 .msg-avatar {
   font-size: 0.68rem;
   font-weight: 600;
-  font-family: var(--font-mono);
+  font-family: 'JetBrains Mono', monospace;
   color: var(--text-muted);
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid var(--border-subtle);
@@ -528,7 +532,7 @@ h3.msg-heading { font-size: 1.0rem; }
 h4.msg-heading { font-size: 0.9rem; }
 
 .inline-code {
-  font-family: var(--font-mono);
+  font-family: 'JetBrains Mono', monospace;
   font-size: 0.8rem;
   background-color: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -556,7 +560,7 @@ h4.msg-heading { font-size: 0.9rem; }
 }
 
 .code-lang {
-  font-family: var(--font-mono);
+  font-family: 'JetBrains Mono', monospace;
   font-size: 0.7rem;
   text-transform: uppercase;
   color: var(--text-muted);
@@ -587,7 +591,7 @@ h4.msg-heading { font-size: 0.9rem; }
 .code-block pre {
   padding: 12px 14px;
   overflow-x: auto;
-  font-family: var(--font-mono);
+  font-family: 'JetBrains Mono', monospace;
   font-size: 0.82rem;
   line-height: 1.5;
   color: #e2e8f0;
@@ -768,11 +772,6 @@ h4.msg-heading { font-size: 0.9rem; }
   justify-content: center;
   font-size: 0.7rem;
   color: var(--text-muted);
-}
-
-.shortcut-hint b {
-  color: var(--text-secondary);
-  font-weight: 500;
 }
 
 /* ── RESPONSIVE DESIGN ── */
