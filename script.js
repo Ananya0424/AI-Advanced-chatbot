@@ -46,7 +46,7 @@ function parseMarkdown(text) {
               <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
               <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
             </svg>
-            <span>Copy code</span>
+            <span>Copy</span>
           </button>
         </div>
         <pre><code id="${id}">${escapedCode}</code></pre>
@@ -90,7 +90,7 @@ function copyCode(btn) {
   const textToCopy = codeEl.innerText || codeEl.textContent;
   navigator.clipboard.writeText(textToCopy).then(() => {
     const span = btn.querySelector("span");
-    const originalText = span ? span.innerText : "Copy code";
+    const originalText = span ? span.innerText : "Copy";
     if (span) span.innerText = "Copied!";
     btn.classList.add("copied");
     setTimeout(() => {
@@ -111,56 +111,24 @@ function sendChip(text) {
 function clearChat() {
   messagesDiv.innerHTML = `
     <div class="welcome" id="welcome">
-      <div class="welcome-header">
-        <div class="welcome-icon">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-          </svg>
+      <div class="welcome-content">
+        <h2 class="welcome-title">Nexus Workspace</h2>
+        <p class="welcome-subtitle">Ask a question, write code, or attach an image for analysis.</p>
+
+        <div class="suggestion-pills">
+          <button class="chip" onclick="sendChip('What is artificial intelligence?')">
+            <span>What is AI?</span>
+          </button>
+          <button class="chip" onclick="sendChip('Explain machine learning simply')">
+            <span>Machine Learning</span>
+          </button>
+          <button class="chip" onclick="sendChip('Write a clean JavaScript async function example')">
+            <span>Async JS Example</span>
+          </button>
+          <button class="chip" onclick="sendChip('Give me a fun fact about software engineering')">
+            <span>Tech Trivia</span>
+          </button>
         </div>
-        <h2>Nexus AI Assistant</h2>
-        <p>High-performance AI model environment for coding, technical queries, and image analysis.</p>
-      </div>
-
-      <div class="prompt-grid">
-        <button class="prompt-card" onclick="sendChip('What is artificial intelligence?')">
-          <div class="card-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-          </div>
-          <div class="card-content">
-            <span class="card-title">Concept Overview</span>
-            <span class="card-desc">Explain Artificial Intelligence fundamentals</span>
-          </div>
-        </button>
-
-        <button class="prompt-card" onclick="sendChip('Explain machine learning simply')">
-          <div class="card-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-          </div>
-          <div class="card-content">
-            <span class="card-title">Machine Learning</span>
-            <span class="card-desc">Break down ML algorithms and models</span>
-          </div>
-        </button>
-
-        <button class="prompt-card" onclick="sendChip('Write a clean JavaScript async function example')">
-          <div class="card-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-          </div>
-          <div class="card-content">
-            <span class="card-title">Code Example</span>
-            <span class="card-desc">Generate production-ready JS code snippet</span>
-          </div>
-        </button>
-
-        <button class="prompt-card" onclick="sendChip('Give me a fun fact about software engineering')">
-          <div class="card-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
-          </div>
-          <div class="card-content">
-            <span class="card-title">Technical Insight</span>
-            <span class="card-desc">Interesting software history & facts</span>
-          </div>
-        </button>
       </div>
     </div>`;
 }
@@ -211,17 +179,13 @@ function addMessage(type, text, imgSrc = null) {
   const avatar = document.createElement("div");
   avatar.className = "msg-avatar";
   if (type === "user") {
-    avatar.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+    avatar.textContent = "You";
   } else {
-    avatar.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
+    avatar.textContent = "Nexus";
   }
 
   const bubbleContainer = document.createElement("div");
   bubbleContainer.className = "msg-bubble-container";
-
-  const authorLabel = document.createElement("span");
-  authorLabel.className = "msg-author";
-  authorLabel.textContent = type === "user" ? "You" : "Nexus Assistant";
 
   const bubble = document.createElement("div");
   bubble.className = "msg-bubble";
@@ -248,9 +212,7 @@ function addMessage(type, text, imgSrc = null) {
     bubble.appendChild(contentDiv);
   }
 
-  bubbleContainer.appendChild(authorLabel);
   bubbleContainer.appendChild(bubble);
-
   row.appendChild(avatar);
   row.appendChild(bubbleContainer);
 
@@ -267,11 +229,8 @@ function showTyping() {
   row.className = "msg-row ai-row";
   row.id = "typingRow";
   row.innerHTML = `
-    <div class="msg-avatar">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-    </div>
+    <div class="msg-avatar">Nexus</div>
     <div class="msg-bubble-container">
-      <span class="msg-author">Nexus Assistant</span>
       <div class="msg-bubble typing-dots">
         <span></span><span></span><span></span>
       </div>
