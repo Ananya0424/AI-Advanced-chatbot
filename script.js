@@ -147,11 +147,6 @@ function selectMenu(btn, mode) {
     userInput.value = "Write a code snippet for: ";
     userInput.focus();
     autoResizeTextarea();
-  } else if (mode === 'summarize') {
-    if (sessionTitle) sessionTitle.textContent = "Summarize";
-    userInput.value = "Summarize the following: ";
-    userInput.focus();
-    autoResizeTextarea();
   } else {
     if (sessionTitle) sessionTitle.textContent = "AI Assistant";
     userInput.focus();
